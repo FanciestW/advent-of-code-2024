@@ -48,5 +48,21 @@ def part1(matrix) -> int:
 
     return word_count
 
+def part2(matrix):
+    match_count = 0
+    word = 'MAS'
+    word_regex = rf'({word}|{word[::-1]})'
+    for y in range(len(matrix) - len(word) + 1):
+        for x in range(len(matrix[y]) - len(word) + 1):
+            sub_matrix = matrix[y:y+len(word), x:x+len(word)]
+            diag_str = ''.join(list(sub_matrix.diagonal()))
+            rev_diag_str = ''.join(list(np.fliplr(sub_matrix).diagonal()))
+            is_diag_match = diag_str == word or diag_str == word[::-1]
+            is_rev_diag_match = rev_diag_str == word or rev_diag_str == word[::-1]
+            if is_diag_match and is_rev_diag_match:
+                match_count += 1
+    return match_count
+
 matrix = read_input()
 print(part1(matrix))
+print(part2(matrix))
