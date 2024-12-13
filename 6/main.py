@@ -1,61 +1,47 @@
-import numpy as np
-from typing import Tuple
+import sys
+import re
+from collections import defaultdict, Counter, dequepyth
+import pyperclip as pc
+def pr(s):
+    print(s)
+    pc.copy(s)
+sys.setrecursionlimit(10**6)
+infile = sys.argv[1] if len(sys.argv)>=2 else '6.in'
+p1 = 0
+p2 = 0
+D = open('6/input.txt').read().strip()
 
-guard_chars = ['^', '>', 'v', '<']
-obstruction_char = '#'
+G = D.split('\n')
+R = len(G)
+C = len(G[0])
+for r in range(R):
+    for c in range(C):
+        if G[r][c] == '^':
+            sr,sc = r,c
 
-def find_guard(matrix) -> Tuple[bool, tuple]:
-    guards = np.argwhere(np.isin(matrix, guard_chars))
-    if guards.size > 0:
-        return True, guards[0]
-    else:
-        return False, [0, 0]
-    
-def mark_full_path(full_path, guard):
-    guard_turn_map = {
-        '^': '>',
-        '>': 'v',
-        'v': '<',
-        '<': '^',
-    }
-    if obstruction_char not in full_path:
-        full_path[:] = 'X'
-    else:
-        obstruction_index = np.argmax(full_path == obstruction_char)
-        full_path[:obstruction_index] = 'X'
-        full_path[obstruction_index-1] = guard_turn_map[guard]
-    return full_path
-
-def move(matrix):
-    has_guard, guard_pos = find_guard(matrix)
-    if not has_guard:
-        return matrix
-
-    guard_x, guard_y = guard_pos
-    guard = matrix[guard_x, guard_y]
-
-    if guard == '^':
-        full_path = matrix[:guard_x+1,guard_y][::-1]
-        marked_full_path = mark_full_path(full_path, guard)
-        matrix[:guard_x+1,guard_y] = marked_full_path[::-1]
-    elif guard == '>':
-        full_path = matrix[guard_x,guard_y:]
-        marked_full_path = mark_full_path(full_path, guard)
-        matrix[guard_x,guard_y:] = marked_full_path
-    elif guard == 'v':
-        full_path = matrix[guard_x:,guard_y]
-        marked_full_path = mark_full_path(full_path, guard)
-        matrix[guard_x:,guard_y] = marked_full_path
-    elif guard == '<':
-        full_path = matrix[guard_x,:guard_y+1][::-1]
-        marked_full_path = mark_full_path(full_path, guard)
-        matrix[guard_x,:guard_y+1] = marked_full_path[::-1]
-    return move(matrix)
-
-def part1():
-    with open('6/input.txt', 'r') as file:
-        matrix = np.array([list(line.strip()) for line in file])        
-        moved_matrix = move(matrix)
-        print(np.count_nonzero(moved_matrix == 'X'))
-
-part1()
+for o_r in range(R):
+    for o_c in range(C):
+        r,c = sr,sc
+        d = 0 # 0=up, 1=right, 2=down, 3=left
+        SEEN = set()
+        SEEN_RC = set()
+        while True:
+            if (r,c,d) in SEEN:
+                p2 += 1
+                break
+            SEEN.add((r,c,d))
+            SEEN_RC.add((r,c))
+            dr,dc = [(-1,0),(0,1),(1,0),(0,-1)][d]
+            rr = r+dr
+            cc = c+dc
+            if not (0<=rr<R and 0<=cc<C):
+                if G[o_r][o_c]=='#':
+                    p1 = len(SEEN_RC)
+                break
+            if G[rr][cc]=='#' or rr==o_r and cc==o_c:
+                d = (d+1)%4
+            else:
+                r = rr
+                c = cc
+pr(p1)
+pr(p2)
